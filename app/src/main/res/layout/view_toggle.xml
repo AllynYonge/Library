@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.example.libaray.view.togglebutton.ToggleButton xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_marginLeft="20dp"
+    android:layout_width="54dp"
+    android:layout_height="30dp"/>
