@@ -1,4 +1,4 @@
-## DisklruCache 
+## DisklruCache
 LruCache在加载大图、多图时解决了内存泄露的问题，但是另外一个问题随之而来：图片从内存移除后，用户又要重新加载已经移除的图片时，只能从网络上重新加载一次，显然非常耗时，这是照片墙应用最常用的功能。Google又提供了一套硬盘缓存的解决方案：DiskLruCache(非Google官方编写，但获得官方认证)。只可惜，Android Doc中并没有对DiskLruCache的用法给出详细的说明，而网上关于DiskLruCache的资料也少之又少，因此今天我准备专门写一篇博客来详细讲解DiskLruCache的用法，以及分析它的工作原理，这应该也是目前网上关于DiskLruCache最详细的资料了。
 
  那么我们先来看一下有哪些应用程序已经使用了DiskLruCache技术。在我所接触的应用范围里，Dropbox、Twitter、网易新闻等都是使用DiskLruCache来进行硬盘缓存的，其中Dropbox和Twitter大多数人应该都没用过，那么我们就从大家最熟悉的网易新闻开始着手分析，来对DiskLruCache有一个最初的认识吧。
