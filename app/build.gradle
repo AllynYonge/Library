@@ -29,6 +29,11 @@ dependencies {
     compile 'io.reactivex:rxandroid:1.1.0'
     compile 'io.reactivex:rxjava:1.1.0'
 
+<<<<<<< HEAD
     //disklrucache库
     compile 'com.jakewharton:disklrucache:2.0.2'
+=======
+    //glide dependencies
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+>>>>>>> adaced37ce0edc7a81fdf442e17f5bf1864b73ca
 }

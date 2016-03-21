@@ -1,4 +1,4 @@
-package com.talkweb.cloudcampus.module.homeworkCheck.view;
+package com.example.libaray.view;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -10,9 +10,8 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.ImageView;
 
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.talkweb.cloudcampus.manger.ImageManager;
-import com.talkweb.cloudcampus.utils.DisplayUtils;
+import com.bumptech.glide.Glide;
+import com.example.libaray.utils.DisplayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +25,9 @@ public class GridImageView extends ViewGroup {
     private int splitLineCount = columns - 1;
     int CRACK_WIDTH = DisplayUtils.dip2px(4);
     private List<String> images = new ArrayList<>();
+    //cache
+    private SimpleArrayMap<Integer, List<ImageView>> mViewCache = new ArrayMap<>();
+    private static List<ImageView> oddImageView = new ArrayList<>();
 
     public GridImageView(Context context) {
         super(context);
@@ -116,7 +118,6 @@ public class GridImageView extends ViewGroup {
 
     }
 
-    private List<ImageView> imageViews = new ArrayList<>();
 
     @NonNull
     private void createImages() {
@@ -125,7 +126,8 @@ public class GridImageView extends ViewGroup {
         for (int x = 0; x < images.size(); x++) {
             ImageView imageView = generateView();
             addView(imageView);
-            ImageLoader.getInstance().displayImage(images.get(x), imageView, ImageManager.getThumbImageOptions());
+            Glide.with(getContext()).load(images.get(x)).asBitmap().into(imageView);
+//            ImageLoader.getInstance().displayImage(images.get(x), imageView, ImageManager.getThumbImageOptions());
             tempViews.add(imageView);
         }
         mViewCache.put(hashCode(), tempViews);
@@ -200,7 +202,8 @@ public class GridImageView extends ViewGroup {
             temp.clear();
         }
         for (int x = 0; x < cacheImageView.size(); x++) {
-            ImageLoader.getInstance().displayImage(images.get(x), cacheImageView.get(x), ImageManager.getThumbImageOptions());
+            Glide.with(getContext()).load(images.get(x)).asBitmap().into(cacheImageView.get(x));
+//            ImageLoader.getInstance().displayImage(images.get(x), cacheImageView.get(x), ImageManager.getThumbImageOptions());
         }
     }
 
@@ -218,10 +221,4 @@ public class GridImageView extends ViewGroup {
         this.columns = number;
     }
 
-
-    /*
-     * cache
-     */
-    private SimpleArrayMap<Integer, List<ImageView>> mViewCache = new ArrayMap<>();
-    private static List<ImageView> oddImageView = new ArrayList<>();
 }
