@@ -3,6 +3,8 @@ package com.example.libaray.common;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.example.libaray.log.Timber;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -57,18 +59,18 @@ public class AsyncExecutor {
                 try {
                     get();
                 } catch (InterruptedException e) {
-                    Log.e(TAG, e);
+                    Timber.e(e.toString());
                     worker.abort();
                     postCancel(worker);
                     e.printStackTrace();
                 } catch (ExecutionException e) {
-                    Log.e(TAG, e.getMessage());
+                    Timber.e(e.getMessage());
                     e.printStackTrace();
                     throw new RuntimeException("An error occured while executing doInBackground()", e.getCause());
                 } catch (CancellationException e) {
                     worker.abort();
                     postCancel(worker);
-                    Log.e(TAG, e);
+                    Timber.e(e.toString());
                     e.printStackTrace();
                 }
             }
@@ -118,10 +120,13 @@ public class AsyncExecutor {
     public static abstract class Worker<T> {
         protected abstract T doInBackground();
 
-        protected void onPostExecute(T data) {}
+        protected void onPostExecute(T data) {
+        }
 
-        protected void onCanceled() {}
+        protected void onCanceled() {
+        }
 
-        protected void abort() {}
+        protected void abort() {
+        }
     }
 }
