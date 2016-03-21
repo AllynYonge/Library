@@ -28,4 +28,7 @@ dependencies {
     //Rxjava + RxAndroid库
     compile 'io.reactivex:rxandroid:1.1.0'
     compile 'io.reactivex:rxjava:1.1.0'
+
+    //glide dependencies
+    compile 'com.github.bumptech.glide:glide:3.7.0'
 }
