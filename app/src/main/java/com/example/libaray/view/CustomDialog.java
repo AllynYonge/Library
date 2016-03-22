@@ -15,6 +15,7 @@ import android.content.Context;
  <item name="android:windowIsFloating">true</item>
  <item name="android:windowIsTranslucent">true</item>
  </style>
+ * 自定义布局的Dialog
  */
 public class CustomDialog extends Dialog {
     public CustomDialog(Context context) {
