@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Libaray</string>
+
+    <!-- stateLayout控件中，没有设置值的时候默认的展示内容 -->
+    <string name="stateLayoutErrorButton">Try Again</string>
+    <string name="stateLayoutEmptyTitlePlaceholder">Nothing Here</string>
+    <string name="stateLayoutEmptyContentPlaceholder">We couldn\'t find anything. Tap the button to take your first image</string>
+    <string name="stateLayoutErrorTitlePlaceholder">No Connection</string>
+    <string name="stateLayoutErrorContentPlaceholder">We could not establish a connection with our servers. Please try again when you are connected to the internet.</string>
 </resources>
