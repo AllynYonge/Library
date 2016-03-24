@@ -180,11 +180,7 @@ public class GridImageView extends ViewGroup {
                     }
                 }
                 for (int x = 0; x < temp.size(); x++) {
-                    ImageView imageView = temp.get(x);
-                    ViewParent parent = imageView.getParent();
-                    if (null == parent) {
-                        addView(imageView);
-                    }
+                    cacheImageView.add(generateView());
                 }
                 cacheImageView.addAll(temp);
             } else {//cache
@@ -202,9 +198,18 @@ public class GridImageView extends ViewGroup {
             temp.clear();
         }
         for (int x = 0; x < cacheImageView.size(); x++) {
+			addView(checkImageView(cacheImageView.get(x)));
             Glide.with(getContext()).load(images.get(x)).asBitmap().into(cacheImageView.get(x));
 //            ImageLoader.getInstance().displayImage(images.get(x), cacheImageView.get(x), ImageManager.getThumbImageOptions());
         }
+    }
+
+    private ImageView checkImageView(@NonNull ImageView imageView) {
+        ViewParent parent = imageView.getParent();
+        if (null != parent) {
+            ((ViewGroup) parent).removeView(imageView);
+        }
+        return imageView;
     }
 
     @Override
