@@ -6,7 +6,7 @@ package com.example.libaray.utils;
  */
 public class NumberUtil {
 
-    public static int convertToint(String intStr, int defValue) {
+    public static int convertToInt(String intStr, int defValue) {
         try {
             return Integer.parseInt(intStr);
         } catch (NumberFormatException e) {
@@ -15,7 +15,7 @@ public class NumberUtil {
         return defValue;
     }
 
-    public static long convertTolong(String longStr, long defValue) {
+    public static long convertToLong(String longStr, long defValue) {
         try {
             return Long.parseLong(longStr);
         } catch (NumberFormatException e) {
@@ -24,7 +24,7 @@ public class NumberUtil {
         return defValue;
     }
 
-    public static float convertTofloat(String fStr, float defValue) {
+    public static float convertToFloat(String fStr, float defValue) {
         try {
             return Float.parseFloat(fStr);
         } catch (NumberFormatException e) {
@@ -33,7 +33,7 @@ public class NumberUtil {
         return defValue;
     }
 
-    public static double convertTodouble(String dStr, double defValue) {
+    public static double convertToDouble(String dStr, double defValue) {
         try {
             return Double.parseDouble(dStr);
         } catch (NumberFormatException e) {

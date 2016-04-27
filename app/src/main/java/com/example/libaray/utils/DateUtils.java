@@ -6,7 +6,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
 
 public class DateUtils {
@@ -14,30 +16,37 @@ public class DateUtils {
     private static SimpleDateFormat yesterdayFormate = new SimpleDateFormat("昨天HH:mm", Locale.CHINA);
     private static SimpleDateFormat dateFormate = new SimpleDateFormat("M月d日", Locale.CHINA);
     private static SimpleDateFormat normalMonthFormate = new SimpleDateFormat("MM/dd", Locale.CHINA);
-
+    private static SimpleDateFormat allDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.CHINA);
+    private static SimpleDateFormat allDateFormatExtra = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.CHINA);
+    public static final long ONE_DAY_SECOND = 24 * 60 * 60;
     public static final long ONE_DAY = 24 * 60 * 60 * 1000;
+    public static final long MILLIS = 1000;
 
     /**
-     * 得到该时间戳对于现在已经过去了几天
+     * 相对于今天日期已经过去了几天
+     * @param time 单位秒
+     * @return
      */
     public static int getDayOffset(long time) {
         if (time > 0) {
-            time *= 1000;
-            long timeOffset = System.currentTimeMillis() - time;
+            long timeOffset = getSecond(System.currentTimeMillis()) - time;
             if (timeOffset > 0) {
-                return (int) ((timeOffset / ONE_DAY) + 1);
+                return (int) ((timeOffset / ONE_DAY_SECOND) + 1);
             }
         }
         return -1;
     }
 
-    public static long getTodayStart() {
-        return getCalendar().getTimeInMillis();//今天的开始时间
-    }
-    public static long getTodayEnd() {
-        return getCalendar().getTimeInMillis() + ONE_DAY;//今天的结束时间
+    public static String getSimpleTimeString(long time) {
+        if (time <= 0) {
+            return "error time";
+        }
+        //今天
+        return formatTowCase(time*1000);
     }
 
+    /**
+     */
     public static String getComplexTimeString(long time) {
         if (time <= 0) {
             return "error time";
@@ -48,7 +57,7 @@ public class DateUtils {
         long dayMill = 24 * hourMill; //一天的毫秒值
         long currentTime = System.currentTimeMillis();
 
-        Calendar cal = getCalendar();
+        Calendar cal = getTodayStartCalendar();
         long todayStart = cal.getTimeInMillis();//今天的开始时间
         long lastDayStart = todayStart - dayMill;//昨天的开始时间
 
@@ -69,6 +78,25 @@ public class DateUtils {
     }
 
     /**
+     * @return 如果是今天返回格式：HH:mm（时:分）  否则返回格式：MM/dd（月/日）
+     */
+    public static String getPluginItemTime(long time){
+        if(time < 0 ) {
+            return "";
+        }
+        time *= 1000 ;
+        return formatTowCase(time);
+    }
+
+    private static String formatTowCase(long time){
+        if(isToday(time)){
+            return todayFormate.format(time);
+        }else{
+            return normalMonthFormate.format(time);
+        }
+    }
+
+    /**
      * @return 格式：MM/dd HH:mm
      */
     public static String getPluginInnerTime(long time){
@@ -83,15 +111,50 @@ public class DateUtils {
         return dateFormate.format(time)+" "+todayFormate.format(time);
     }
 
+    //@return 格式: yyyy/MM/dd HH:mm
+    public static String getAllFormatTime(long time) {
+        return allDateFormat.format(time);
+    }
+
+    public static String getAllFormatTimeExtra(long time) {
+        return allDateFormatExtra.format(time);
+    }
+
     /**
-     * 判断该时间戳是不是属于今天
+     * 格式化时间为 MM 月 DD 日
+     * @param time 时间戳
      */
-    public static boolean isToday(long time){
-        long dayMill = 24 * 3600 * 1000; //一天的毫秒值
-        Calendar cal = getCalendar();
+    public static String formatDateWithMMDD(long time){
+        return dateFormate.format(new Date(time * MILLIS));
+    }
+
+    public static String getTimeString(long time) {
+        if (time <= 0) {
+            return "error time";
+        }
+        time *= 1000;
+        Calendar cal = getTodayStartCalendar();
         long todayStart = cal.getTimeInMillis();
-        long todayEnd = todayStart + dayMill;
-        return time > todayStart && time < todayEnd ;
+        long lastDayStart = todayStart - ONE_DAY;
+        long tomorrowStart = todayStart + ONE_DAY;
+        long weekStart = todayStart - 7 * ONE_DAY;
+
+        //今天
+        if (time >= todayStart && time < tomorrowStart) {
+            return todayFormate.format(new Date(time));
+        }
+        //昨天
+        else if (time >= lastDayStart && time < todayStart) {
+            return yesterdayFormate.format(new Date(time));
+        }
+        //前7天
+        else if (time >= weekStart) {
+            return getWeekDay();
+        }
+        //7天后
+        else {
+            return dateFormate.format(new Date(time));
+        }
     }
 
     public static String getGardenFormatTime(String time) {
@@ -150,74 +213,29 @@ public class DateUtils {
         return Math.abs(toSecond - fromSecond) > 60*60*24*30;
     }
 
-    private static SimpleDateFormat allDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.CHINA);
-    private static SimpleDateFormat allDateFormatExtra = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.CHINA);
-
-    public static String getAllFormatTime(long time) {
-        return allDateFormat.format(time);
-    }
-
-    public static String getAllFormatTimeExtra(long time) {
-        return allDateFormatExtra.format(time);
-    }
-
     /**
-     * 格式化时间为 MM 月 DD 日
-     * @param time 时间戳
-     */
-    public static String formatDateWithMMDD(long time){
-        return dateFormate.format(new Date(time));
-    }
-
-    /**
-     * 根据时间戳来获取，该时间戳对应为星期几
+     * 根据多少秒得到今天是星期几
+     * @param time 单位为秒
      */
     public static String getWeekDayOfTime(long time){
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date(time));
+        calendar.setTime(new Date(time * MILLIS));
         return getWeekDayOfTime(calendar);
     }
 
     /**
-     * 得到当前时间为星期几
+     * 判断几天是星期几
+     * @return
      */
-    private static String getWeekDay() {
+    public static String getWeekDay() {
         Calendar c = Calendar.getInstance();
         return getWeekDayOfTime(c);
     }
 
     /**
-     * 微信聊天中的时间显示格式
+     * 根据Calendar获取当前是星期几
+     * @param c Calendar
      */
-    public static String getTimeString(long time) {
-        if (time <= 0) {
-            return "error time";
-        }
-        time *= 1000;
-        Calendar cal = getCalendar();
-        long todayStart = cal.getTimeInMillis();
-        long lastDayStart = todayStart - ONE_DAY;
-        long tomorrowStart = todayStart + ONE_DAY;
-        long weekStart = todayStart - 7 * ONE_DAY;
-
-        //若是今天就显示：{HH:mm}
-        if (time >= todayStart && time < tomorrowStart) {
-            return todayFormate.format(new Date(time));
-        }
-        //昨天，显示：{昨天HH:mm}
-        else if (time >= lastDayStart && time < todayStart) {
-            return yesterdayFormate.format(new Date(time));
-        }
-        //前7天，显示：{星期几}
-        else if (time >= weekStart) {
-            return getWeekDay();
-        }
-        //7天后，显示{M月d日}
-        else {
-            return dateFormate.format(new Date(time));
-        }
-    }
-
     @NonNull
     private static String getWeekDayOfTime(Calendar c) {
         switch (c.get(Calendar.DAY_OF_WEEK)) {
@@ -240,7 +258,19 @@ public class DateUtils {
         }
     }
 
-    private static Calendar getCalendar() {
+    /**
+     * 是否为今天
+     * @param time 时间戳
+     */
+    public static boolean isToday(long time){
+        long dayMill = 24 * 3600 * 1000; //一天的毫秒值
+        Calendar cal = getTodayStartCalendar();
+        long todayStart = cal.getTimeInMillis();
+        long todayEnd = todayStart + dayMill;
+        return time > todayStart && time < todayEnd ;
+    }
+
+    private static Calendar getTodayStartCalendar() {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.SECOND, 0);
@@ -248,4 +278,97 @@ public class DateUtils {
         cal.set(Calendar.MILLISECOND, 0);
         return cal;
     }
+
+    private static Calendar getTodayEndCalendar(){
+        Calendar todayEnd = Calendar.getInstance();
+        todayEnd.set(Calendar.HOUR_OF_DAY, 23);
+        todayEnd.set(Calendar.MINUTE, 59);
+        todayEnd.set(Calendar.SECOND, 59);
+        todayEnd.set(Calendar.MILLISECOND, 999);
+        return todayEnd;
+    }
+
+    /**
+     * 得到今天的开始时间
+     * @return 秒为单位
+     */
+    public static long getTodayStart() {
+        return getSecond(getTodayStartCalendar().getTimeInMillis());
+    }
+
+    /**
+     * 得到今天的结束时间
+     * @return 秒为单位
+     */
+    public static long getTodayEnd() {
+        return getSecond(getTodayEndCalendar().getTimeInMillis());
+    }
+
+    public static long getTodayNow(){
+        return getSecond(System.currentTimeMillis());
+    }
+
+    /**
+     * 根据yyyy-MM-dd的字符串格式得到该日期的开始时间
+     * @param timeString
+     * @return 单位为秒
+     */
+    public static long getDateStartStamp(String timeString){
+        String[] split = timeString.split("-");
+        Calendar cal = new GregorianCalendar(TimeZone.getDefault(),Locale.CHINA);
+        cal.set(Integer.valueOf(split[0]),Integer.valueOf(split[1]) - 1,Integer.valueOf(split[2]));
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return getSecond(cal.getTimeInMillis());
+    }
+
+    /**
+     * 根据yyyy-MM-dd的字符串格式得到该日期的开始时间
+     * @param timeString
+     * @return 单位为秒
+     */
+    public static long getDateEndStamp(String timeString){
+        String[] split = timeString.split("-");
+        Calendar cal = new GregorianCalendar(TimeZone.getDefault(),Locale.CHINA);
+        cal.set(Integer.valueOf(split[0]),Integer.valueOf(split[1]) - 1,Integer.valueOf(split[2]));
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return getSecond(cal.getTimeInMillis());
+    }
+
+    public static long yyyyMMdd2Long(String time){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd",Locale.CHINESE);
+        Date date= null;
+        try {
+            date = simpleDateFormat .parse(time);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return getSecond(date.getTime());
+    }
+
+    public static String Long2yyyyMMdd(long time){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd",Locale.CHINESE);
+        return simpleDateFormat.format(time*1000);
+    }
+
+    public static String formatDateWithYYYMMDD(){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd",Locale.CHINESE);
+        return simpleDateFormat.format(new Date());
+    }
+
+    public static int getSecond(long milliSecond) {
+        return (int) (milliSecond / 1000);
+    }
+
+    public static int getCurYear() {
+        Calendar thisDay = Calendar.getInstance();
+        int curYear = thisDay.get(Calendar.YEAR);
+        return curYear;
+    }
+
 }
